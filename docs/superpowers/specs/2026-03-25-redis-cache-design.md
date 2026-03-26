@@ -64,7 +64,7 @@ All keys are prefixed `bestbox:` for easy identification and bulk flush (`redis-
 | `get_inventory_lots(product_id)` | `bestbox:inv:lots:{product_id}` | 2 min |
 | `list_low_stock(threshold)` | `bestbox:inv:lowstock:{threshold}` | 5 min |
 
-List query keys hash all filter parameters (`customer_id`, `date_from`, `date_to`, `status`, `limit`) so different filter combinations get independent cache entries.
+List query keys hash all filter parameters (`customer_id`, `date_from`, `date_to`, `status`, `limit`) using SHA-256 of their sorted JSON representation (`json.dumps(params, sort_keys=True, default=str)`), so different filter combinations get independent cache entries.
 
 TTLs are defined in a single `CacheConfig` dataclass and overridable via env vars (e.g., `CACHE_TTL_STOCK_SEC=120`).
 
@@ -94,7 +94,7 @@ If `REDIS_URL` is unreachable at startup, `create_app()` and the MCP server init
 
 ## Manual Invalidation
 
-`RedisCache.invalidate(pattern: str)` issues a `redis-cli KEYS pattern` + `DEL` to flush targeted entries. Intended for ops use (e.g., after a manual ERP correction). No automatic write-through or pub/sub invalidation in this design.
+`RedisCache.invalidate(pattern: str)` uses redis-py's `scan_iter(pattern)` + `delete` to flush targeted entries without blocking the server. Intended for ops use (e.g., after a manual ERP correction). No automatic write-through or pub/sub invalidation in this design.
 
 Example:
 ```python
