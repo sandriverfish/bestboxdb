@@ -1,0 +1,37 @@
+networks:
+  bestbox-net:
+    external: true
+    name: bestbox-net
+
+services:
+  bestbox-api:
+    image: 192.168.1.98:5000/bestbox:latest
+    container_name: bestbox-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.server
+    networks:
+      - bestbox-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/docs || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  bestbox-mcp:
+    image: 192.168.1.98:5000/bestbox:latest
+    container_name: bestbox-mcp
+    command: ["python", "-m", "bestbox.mcp.server"]
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env.server
+    environment:
+      MCP_TRANSPORT: "sse"
+      MCP_PORT: "8001"
+    networks:
+      - bestbox-net
+    restart: unless-stopped
