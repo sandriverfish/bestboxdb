@@ -1,0 +1,43 @@
+networks:
+  bestbox-net:
+    name: bestbox-net
+    driver: bridge
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: bestbox-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+    volumes:
+      - /data/yishang:/data/yishang:ro
+      - /data/sqlserver/data:/var/opt/mssql/data
+      - ./init-db.sh:/init-db.sh:ro
+    entrypoint: ["/bin/bash", "/init-db.sh"]
+    networks:
+      - bestbox-net
+    restart: unless-stopped
+    healthcheck:
+      test: >
+        CMD-SHELL /opt/mssql-tools18/bin/sqlcmd
+        -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C
+        -Q "SELECT 1" || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  redis:
+    image: redis:7-alpine
+    container_name: bestbox-redis
+    volumes:
+      - /data/redis:/data
+    networks:
+      - bestbox-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
