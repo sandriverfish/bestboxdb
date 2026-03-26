@@ -117,7 +117,7 @@ class SmartTradeOrderRepository:
         if status == OrderStatus.APPROVED:
             where.append("soApproveTag = 1")
         elif status == OrderStatus.PENDING:
-            where.append("(soApproveTag IS NULL OR soApproveTag = 0)")
+            where.append("(soApproveTag IS NULL OR soApproveTag <> 1)")
 
         sql = f"""
             SELECT TOP {int(limit)} *
