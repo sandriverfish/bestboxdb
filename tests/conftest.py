@@ -1,4 +1,6 @@
 import pytest
+from dotenv import load_dotenv
+load_dotenv()
 from decimal import Decimal
 from datetime import datetime
 from bestbox.core.domain.orders import OrderStatus, OrderItem, SalesOrder, PurchaseOrder
