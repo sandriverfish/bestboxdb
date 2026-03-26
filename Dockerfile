@@ -18,4 +18,7 @@ COPY src/ src/
 
 RUN pip install --no-cache-dir .
 
+RUN useradd --system --no-create-home appuser
+USER appuser
+
 CMD ["uvicorn", "bestbox.rest.main:app", "--host", "0.0.0.0", "--port", "8000"]
