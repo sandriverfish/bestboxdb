@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+tests/
+docs/
+*.bak
+.git/
+.mcp.json
+deploy/
+.worktrees/
