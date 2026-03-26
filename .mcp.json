@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bestbox": {
+      "command": "E:\\MyCode\\bestboxdb\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "bestbox.mcp.server"],
+      "cwd": "E:\\MyCode\\bestboxdb"
+    }
+  }
+}

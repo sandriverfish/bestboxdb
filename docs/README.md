@@ -127,6 +127,9 @@ bestboxdb/
 │   ├── README.md                   # This file
 │   ├── api-reference.md            # REST API endpoint reference
 │   ├── mcp-tools.md                # MCP tool reference
+│   ├── user-guide.md               # End-user guide (Claude Code / MCP clients)
+│   ├── faq.md                      # Common operational questions and quirks
+│   ├── agentic-app.md              # How-to: LangGraph + local LLM agent
 │   └── adding-erp-adapter.md       # Guide for adding new ERP systems
 ├── pyproject.toml
 ├── .env                            # Credentials (not committed)

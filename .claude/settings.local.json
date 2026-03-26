@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__bestbox__list_sales_orders",
+      "mcp__bestbox__check_stock",
+      "mcp__bestbox__get_inventory_lots",
+      "mcp__bestbox__get_sales_order",
+      "Bash(python -m pytest tests/unit/ -q)"
+    ]
+  }
+}
