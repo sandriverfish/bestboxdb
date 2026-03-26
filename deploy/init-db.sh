@@ -23,9 +23,11 @@ done
 DB_EXISTS=$(/opt/mssql-tools18/bin/sqlcmd \
     -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C \
     -h -1 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.databases WHERE name='SmartTrade_2024'" \
-    2>/dev/null | tr -d '[:space:]')
+    2>/dev/null | tr -d '[:space:]') || true
 
-if [ "$DB_EXISTS" = "0" ]; then
+if [ "$DB_EXISTS" = "1" ]; then
+    echo "[init-db] Database SmartTrade_2024 already exists. Skipping restore."
+elif [ "$DB_EXISTS" = "0" ]; then
     echo "[init-db] Database not found. Locating latest backup..."
 
     LATEST_BAK=$(ls -1 /data/yishang/*.bak 2>/dev/null | sort | tail -1)
@@ -46,7 +48,8 @@ if [ "$DB_EXISTS" = "0" ]; then
 
     echo "[init-db] Restore complete."
 else
-    echo "[init-db] Database SmartTrade_2024 already exists. Skipping restore."
+    echo "[init-db] ERROR: Could not determine database state (got: '$DB_EXISTS'). Aborting."
+    exit 1
 fi
 
 echo "[init-db] Handing control to SQL Server process $MSSQL_PID."
