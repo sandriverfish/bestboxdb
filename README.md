@@ -1,10 +1,12 @@
-# myclawdb
-database connection
+# BestBox
 
+Enterprise agentic gateway for ERP data. Exposes SmartTrade ERP (vendor: TopVision) via REST API and MCP server.
 
-## yishang\
-- 数据库类型：MS SQL Server
-- Server地址：192.168.1.147
-- 用户名:YIBAO
-- 数据库密码：Topvision_2026
-- 数据库端口：20241
+See [docs/README.md](docs/README.md) for full documentation.
+
+## Quick links
+
+- [Getting started & architecture](docs/README.md)
+- [REST API reference](docs/api-reference.md)
+- [MCP tools reference](docs/mcp-tools.md)
+- [Adding a new ERP adapter](docs/adding-erp-adapter.md)
