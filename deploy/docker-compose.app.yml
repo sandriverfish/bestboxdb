@@ -31,7 +31,8 @@ services:
       - .env.server
     environment:
       MCP_TRANSPORT: "sse"
-      MCP_PORT: "8001"
+      FASTMCP_HOST: "0.0.0.0"
+      FASTMCP_PORT: "8001"
     networks:
       - bestbox-net
     restart: unless-stopped

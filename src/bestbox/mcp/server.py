@@ -138,10 +138,7 @@ if __name__ == "__main__":
     import os
     transport = os.environ.get("MCP_TRANSPORT", "stdio")
     if transport == "sse":
-        mcp.run(
-            transport="sse",
-            host="0.0.0.0",
-            port=int(os.environ.get("MCP_PORT", "8001")),
-        )
-    else:
-        mcp.run()
+        mcp.settings.host = os.environ.get("FASTMCP_HOST", "0.0.0.0")
+        mcp.settings.port = int(os.environ.get("FASTMCP_PORT", "8001"))
+        mcp.settings.transport_security = None  # allow remote access; host is not localhost
+    mcp.run(transport=transport)
