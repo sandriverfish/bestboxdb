@@ -59,3 +59,52 @@ async def test_get_purchase_order_found(sample_purchase_order):
         response = await client.get("/api/v1/orders/purchases/1")
     assert response.status_code == 200
     assert response.json()["supplier_id"] == 10
+
+
+@pytest.mark.asyncio
+async def test_list_purchase_orders_returns_supplier_name(sample_purchase_order):
+    service = OrderService(repo=MockOrderRepo(po=sample_purchase_order))
+    app = create_app(order_service=service)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/orders/purchases")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["supplier_name"] == "深圳聚成达电子"
+    assert len(data[0]["items"]) == 1
+    assert data[0]["items"][0]["part_number"] == "P001"
+
+
+@pytest.mark.asyncio
+async def test_get_purchase_order_returns_supplier_name(sample_purchase_order):
+    service = OrderService(repo=MockOrderRepo(po=sample_purchase_order))
+    app = create_app(order_service=service)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/orders/purchases/1")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["supplier_name"] == "深圳聚成达电子"
+
+
+@pytest.mark.asyncio
+async def test_list_sales_orders_returns_customer_name(sample_sales_order):
+    service = OrderService(repo=MockOrderRepo(order=sample_sales_order))
+    app = create_app(order_service=service)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/orders/sales")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["customer_name"] == "上海示例客户"
+    assert len(data[0]["items"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_get_sales_order_returns_customer_name(sample_sales_order):
+    service = OrderService(repo=MockOrderRepo(order=sample_sales_order))
+    app = create_app(order_service=service)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/orders/sales/1")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["customer_name"] == "上海示例客户"

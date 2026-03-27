@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
 from bestbox.adapters.smarttrade.db.connection import get_connection
@@ -62,7 +63,13 @@ class SmartTradeOrderRepository:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT * FROM SellOrder WHERE soOrderID = ?", order_id
+                """
+                SELECT so.*, c.cusName AS customer_name
+                FROM SellOrder so
+                LEFT JOIN Customer c ON so.soCustomerID = c.cusID
+                WHERE so.soOrderID = ?
+                """,
+                order_id,
             )
             header = cursor.fetchone()
             if not header:
@@ -88,6 +95,7 @@ class SmartTradeOrderRepository:
             order_sn      = header.soOrderSN,
             order_date    = header.soOrderDate,
             customer_id   = header.soCustomerID,
+            customer_name = getattr(header, "customer_name", None),
             currency      = str(header.soCurrencyID),
             total_amount  = float(header.soAmount or 0),
             delivery_date = header.soDeliveryDate,
@@ -106,29 +114,41 @@ class SmartTradeOrderRepository:
     ) -> list[SalesOrder]:
         where, params = ["1=1"], []
         if customer_id is not None:
-            where.append("soCustomerID = ?")
+            where.append("so.soCustomerID = ?")
             params.append(customer_id)
         if date_from is not None:
-            where.append("soOrderDate >= ?")
+            where.append("so.soOrderDate >= ?")
             params.append(date_from)
         if date_to is not None:
-            where.append("soOrderDate <= ?")
+            where.append("so.soOrderDate <= ?")
             params.append(date_to)
         if status == OrderStatus.APPROVED:
-            where.append("soApproveTag = 1")
+            where.append("so.soApproveTag = 1")
         elif status == OrderStatus.PENDING:
-            where.append("(soApproveTag IS NULL OR soApproveTag <> 1)")
+            where.append("(so.soApproveTag IS NULL OR so.soApproveTag <> 1)")
 
         sql = f"""
-            SELECT TOP {int(limit)} *
-            FROM SellOrder
+            SELECT TOP {int(limit)} so.*, c.cusName AS customer_name
+            FROM SellOrder so
+            LEFT JOIN Customer c ON so.soCustomerID = c.cusID
             WHERE {' AND '.join(where)}
-            ORDER BY soOrderDate DESC
+            ORDER BY so.soOrderDate DESC
         """
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             rows = cursor.fetchall()
+
+            order_ids = [r.soOrderID for r in rows]
+            items_by_order: dict[int, list] = defaultdict(list)
+            if order_ids:
+                placeholders = ",".join("?" * len(order_ids))
+                cursor.execute(
+                    f"SELECT * FROM SellOrderItem WHERE soiOrderID IN ({placeholders}) ORDER BY soiOrderID, soiLineNO",
+                    order_ids,
+                )
+                for ir in cursor.fetchall():
+                    items_by_order[ir.soiOrderID].append(_row_to_order_item(ir))
 
         return [
             SalesOrder(
@@ -136,11 +156,13 @@ class SmartTradeOrderRepository:
                 order_sn      = r.soOrderSN,
                 order_date    = r.soOrderDate,
                 customer_id   = r.soCustomerID,
+                customer_name = getattr(r, "customer_name", None),
                 currency      = str(r.soCurrencyID),
                 total_amount  = float(r.soAmount or 0),
                 delivery_date = r.soDeliveryDate,
                 status        = _resolve_order_status(r.soApproveTag, None),
                 remark        = r.soRemark,
+                items         = items_by_order.get(r.soOrderID, []),
             )
             for r in rows
         ]
@@ -149,7 +171,13 @@ class SmartTradeOrderRepository:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT * FROM PurchaseOrder WHERE poOrderID = ?", order_id
+                """
+                SELECT po.*, s.supName AS supplier_name
+                FROM PurchaseOrder po
+                LEFT JOIN Supplier s ON po.poSupplierID = s.supID
+                WHERE po.poOrderID = ?
+                """,
+                order_id,
             )
             header = cursor.fetchone()
             if not header:
@@ -165,6 +193,7 @@ class SmartTradeOrderRepository:
             order_sn      = header.poOrderSN,
             order_date    = header.poOrderDate,
             supplier_id   = header.poSupplierID,
+            supplier_name = getattr(header, "supplier_name", None),
             currency      = str(header.poCurrencyID),
             total_amount  = float(header.poAmount or 0),
             delivery_date = header.poDeliveryDate,
@@ -182,25 +211,37 @@ class SmartTradeOrderRepository:
     ) -> list[PurchaseOrder]:
         where, params = ["1=1"], []
         if supplier_id is not None:
-            where.append("poSupplierID = ?")
+            where.append("po.poSupplierID = ?")
             params.append(supplier_id)
         if date_from is not None:
-            where.append("poOrderDate >= ?")
+            where.append("po.poOrderDate >= ?")
             params.append(date_from)
         if date_to is not None:
-            where.append("poOrderDate <= ?")
+            where.append("po.poOrderDate <= ?")
             params.append(date_to)
 
         sql = f"""
-            SELECT TOP {int(limit)} *
-            FROM PurchaseOrder
+            SELECT TOP {int(limit)} po.*, s.supName AS supplier_name
+            FROM PurchaseOrder po
+            LEFT JOIN Supplier s ON po.poSupplierID = s.supID
             WHERE {' AND '.join(where)}
-            ORDER BY poOrderDate DESC
+            ORDER BY po.poOrderDate DESC
         """
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             rows = cursor.fetchall()
+
+            order_ids = [r.poOrderID for r in rows]
+            items_by_order: dict[int, list] = defaultdict(list)
+            if order_ids:
+                placeholders = ",".join("?" * len(order_ids))
+                cursor.execute(
+                    f"SELECT * FROM PurchaseOrderItem WHERE poiOrderID IN ({placeholders}) ORDER BY poiOrderID, poiLineNO",
+                    order_ids,
+                )
+                for ir in cursor.fetchall():
+                    items_by_order[ir.poiOrderID].append(_row_to_po_item(ir))
 
         return [
             PurchaseOrder(
@@ -208,10 +249,12 @@ class SmartTradeOrderRepository:
                 order_sn      = r.poOrderSN,
                 order_date    = r.poOrderDate,
                 supplier_id   = r.poSupplierID,
+                supplier_name = getattr(r, "supplier_name", None),
                 currency      = str(r.poCurrencyID),
                 total_amount  = float(r.poAmount or 0),
                 delivery_date = r.poDeliveryDate,
                 status        = _resolve_order_status(r.poApproveTag, None),
+                items         = items_by_order.get(r.poOrderID, []),
             )
             for r in rows
         ]
