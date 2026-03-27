@@ -27,7 +27,7 @@ services:
 
   redis:
     image: 192.168.1.98:5000/redis:7-alpine
-    container_name: bestbox-redis
+    container_name: bestboxdb-redis
     volumes:
       - /data/redis:/data
     networks:
