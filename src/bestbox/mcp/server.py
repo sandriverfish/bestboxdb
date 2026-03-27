@@ -197,13 +197,13 @@ def search_products(query: str, limit: int = 20) -> list[dict]:
                 sub.last_price
             FROM (
                 SELECT poiPartNumber AS part_number,
-                       piBrand AS brand,
+                       poiBrand AS brand,
                        poiAllDesc AS description,
                        MAX(poiPrice) AS last_price
                 FROM PurchaseOrderItem
-                WHERE (poiPartNumber LIKE ? OR piBrand LIKE ? OR poiAllDesc LIKE ?)
+                WHERE (poiPartNumber LIKE ? OR poiBrand LIKE ? OR poiAllDesc LIKE ?)
                   AND poiPrice > 0
-                GROUP BY poiPartNumber, piBrand, poiAllDesc
+                GROUP BY poiPartNumber, poiBrand, poiAllDesc
             ) sub
             LEFT JOIN (
                 SELECT piPartNumber,
