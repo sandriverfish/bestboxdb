@@ -26,7 +26,7 @@ services:
     container_name: bestbox-mcp
     command: ["python", "-m", "bestbox.mcp.server"]
     ports:
-      - "8001:8001"
+      - "8051:8001"
     env_file:
       - .env.server
     environment:
