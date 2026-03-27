@@ -57,3 +57,49 @@ def test_purchase_order_serializes():
     data = po.model_dump()
     assert data["order_sn"] == "PO2024-00001"
     assert data["status"] == OrderStatus.PENDING
+
+
+def test_purchase_order_supplier_name_defaults_to_none():
+    po = PurchaseOrder(
+        order_id=1, order_sn="PO-001",
+        order_date=datetime(2024, 1, 15), supplier_id=10,
+        currency="USD", total_amount=500.0,
+        delivery_date=None, status=OrderStatus.PENDING,
+    )
+    assert po.supplier_name is None
+
+
+def test_purchase_order_supplier_name_populated():
+    po = PurchaseOrder(
+        order_id=1, order_sn="PO-001",
+        order_date=datetime(2024, 1, 15), supplier_id=10,
+        supplier_name="深圳聚成达电子",
+        currency="USD", total_amount=500.0,
+        delivery_date=None, status=OrderStatus.PENDING,
+    )
+    assert po.supplier_name == "深圳聚成达电子"
+    data = po.model_dump()
+    assert data["supplier_name"] == "深圳聚成达电子"
+
+
+def test_sales_order_customer_name_defaults_to_none():
+    so = SalesOrder(
+        order_id=1, order_sn="SO-001",
+        order_date=datetime(2024, 1, 15), customer_id=42,
+        currency="CNY", total_amount=1000.0,
+        delivery_date=None, status=OrderStatus.PENDING, remark=None,
+    )
+    assert so.customer_name is None
+
+
+def test_sales_order_customer_name_populated():
+    so = SalesOrder(
+        order_id=1, order_sn="SO-001",
+        order_date=datetime(2024, 1, 15), customer_id=42,
+        customer_name="上海示例客户",
+        currency="CNY", total_amount=1000.0,
+        delivery_date=None, status=OrderStatus.PENDING, remark=None,
+    )
+    assert so.customer_name == "上海示例客户"
+    data = so.model_dump()
+    assert data["customer_name"] == "上海示例客户"

@@ -28,25 +28,27 @@ class OrderItem(BaseModel):
 
 
 class SalesOrder(BaseModel):
-    order_id:      int
-    order_sn:      str
-    order_date:    datetime
-    customer_id:   int
-    currency:      str
-    total_amount:  float
-    delivery_date: datetime | None
-    status:        OrderStatus
-    remark:        str | None
-    items:         list[OrderItem] = []
+    order_id:       int
+    order_sn:       str
+    order_date:     datetime
+    customer_id:    int
+    customer_name:  str | None = None
+    currency:       str
+    total_amount:   float
+    delivery_date:  datetime | None
+    status:         OrderStatus
+    remark:         str | None
+    items:          list[OrderItem] = []
 
 
 class PurchaseOrder(BaseModel):
-    order_id:      int
-    order_sn:      str
-    order_date:    datetime
-    supplier_id:   int
-    currency:      str
-    total_amount:  float
-    delivery_date: datetime | None
-    status:        OrderStatus
-    items:         list[OrderItem] = []
+    order_id:       int
+    order_sn:       str
+    order_date:     datetime
+    supplier_id:    int
+    supplier_name:  str | None = None
+    currency:       str
+    total_amount:   float
+    delivery_date:  datetime | None
+    status:         OrderStatus
+    items:          list[OrderItem] = []

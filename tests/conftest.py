@@ -23,6 +23,7 @@ def sample_sales_order():
     return SalesOrder(
         order_id=1, order_sn="SO2024-00001",
         order_date=datetime(2024, 1, 15), customer_id=42,
+        customer_name="上海示例客户",
         currency="CNY", total_amount=150.0,
         delivery_date=datetime(2024, 3, 1),
         status=OrderStatus.PARTIAL, remark=None,
@@ -35,6 +36,7 @@ def sample_purchase_order():
     return PurchaseOrder(
         order_id=1, order_sn="PO2024-00001",
         order_date=datetime(2024, 1, 15), supplier_id=10,
+        supplier_name="深圳聚成达电子",
         currency="USD", total_amount=500.0,
         delivery_date=datetime(2024, 2, 15),
         status=OrderStatus.APPROVED,
